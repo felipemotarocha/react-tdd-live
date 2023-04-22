@@ -1,5 +1,7 @@
+import Todos from "./components/todos.component";
+
 const App = () => {
-  return <h1>hello world</h1>;
+  return <Todos />;
 };
 
 export default App;
