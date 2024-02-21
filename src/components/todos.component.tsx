@@ -4,24 +4,31 @@ import { v4 as uuid } from "uuid";
 
 import { FaPlus, FaDeleteLeft } from "react-icons/fa6";
 import { Todo } from "./interface/todo";
+import { useCreateTarefa, useDeleteTarefa } from "../hooks/useTarefa";
 
 const Todos = (): JSX.Element => {
+
+  const { mutateAsync: criarTarefa } = useCreateTarefa();
+  const { mutateAsync: deletarTarefa } = useDeleteTarefa();
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
     resetField
-  } = useForm<{ title: string }>();
+  } = useForm<{ nome: string }>();
   const [todos, setTodos] = useState<Todo[]>([]);
+  const taskId = uuid();
 
-  const handleAddClick = (data: { title: string }) => {
-    setTodos(prev => [...prev, { id: uuid(), title: data.title, isCompleted: false }]);
-    resetField("title");
-  };
+  const handleAddClick = async (data: { nome: string }) => {
+    setTodos(prev => [...prev, { id: taskId, nome: data.nome, isCompleted: false }]);
+    await criarTarefa({ tarefa_id: parseInt(taskId), tarefa_nome: data.nome });
+    resetField("nome");
+};
 
-  const handleDeleteClick = (id: string) => {
+const handleDeleteClick = async (id: string, numId: number) => {
     setTodos(prev => prev.filter(todo => todo.id !== id));
-  };
+    await deletarTarefa(numId);
+};
 
   return (
     <div className="w-screen h-screen bg-gray-950 flex items-center justify-center flex-col">
@@ -30,7 +37,7 @@ const Todos = (): JSX.Element => {
       <div className="w-72 flex justify-center items-center flex-col">
         <div className="flex gap-5">
           <input type="text" className="rounded-md p-3 text-gray-50 bg-gray-800" placeholder="Digite o nome da tarefa"
-            {...register("title", { required: true })}
+            {...register("nome", { required: true })}
           />
           <button aria-label="Adicionar tarefa" onClick={() => handleSubmit(handleAddClick)()}><FaPlus size={24} className="text-gray-50" /></button>
         </div>
@@ -38,9 +45,9 @@ const Todos = (): JSX.Element => {
           todos.map(todo => (
             <div key={todo.id} className="flex items-center gap-4 w-full justify-between rounded-md px-5 py-2 bg-gray-800 mt-20">
               <p className="text-gray-200 w-full h-8 flex justify-center items-center">
-                {todo.title}
+                {todo.nome}
               </p>
-              <button aria-label={`Deletar tarefa: ${todo.title}`} onClick={() => handleDeleteClick(todo.id)}>
+              <button aria-label={`Deletar tarefa: ${todo.nome}`} onClick={() => handleDeleteClick(todo.id, parseInt(todo.id))}>
                 <FaDeleteLeft size={26} className="text-red-500" />
               </button>
             </div>
