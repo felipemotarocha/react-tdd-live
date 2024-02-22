@@ -4,7 +4,6 @@ import { useCreateTarefa, useDeleteTarefa, useEditTarefa, useGetTarefas } from "
 import { FaPlus, FaDeleteLeft, FaX, } from "react-icons/fa6";
 import { Todo } from "./interface/todo";
 import { FaEdit } from "react-icons/fa";
-import { act } from "@testing-library/react";
 
 const Todos = (): JSX.Element => {
 
