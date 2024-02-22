@@ -1,14 +1,26 @@
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { API, queryClient } from "../service";
+import { Tarefa } from "./interface/tarefa";
 
-interface Tarefa {
-    tarefa_id: number;
-    tarefa_nome: string;
+export const useGetTarefas = () => {
+    return useQuery(['get-tarefas'], async () => {
+        const response = await API.get('/api/v1/tarefas');
+        return response.data;
+    });
 }
 
-// export const listAllTarefas = () => {
-
-// }
+export const useEditTarefa = () => {
+    return useMutation<Tarefa, unknown, Tarefa>(
+        async (tarefa) => {
+            const response = await API.put('/api/v1/tarefas/update', tarefa);
+            return response.data;
+        }, {
+            onSuccess: () => {
+                queryClient.invalidateQueries('get-tarefa');
+            }
+        }
+    );
+}
 
 export const useCreateTarefa = () => {
     return useMutation<Tarefa, unknown, Tarefa>(
