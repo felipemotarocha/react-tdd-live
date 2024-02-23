@@ -15,16 +15,20 @@ const Todos = (): JSX.Element => {
   const { register, handleSubmit, resetField } = useForm<{ tarefa_nome: string }>();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [nextId, setNextId] = useState<number>(1);
+  
   const [editVisible, setEditVisible] = useState<boolean>(false);
   const [editedTodo, setEditedTodo] = useState<Todo | null>(null);
-  const [nomeEditado, setNomeEditado] = useState<string>('')
+  const [nomeEditado, setNomeEditado] = useState<string>('');
+
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
 
   useEffect(() => {
     if (!isLoading && tarefas) {
       setTodos(tarefas);
-      setNextId(todos.length != 0 ? todos[todos.length - 1].tarefa_id + 1 : 1);
+      setNextId(tarefas.length !== 0 ? tarefas[tarefas.length - 1].tarefa_id + 1 : 1);
     }
-  }, [isLoading, tarefas, todos]);
+  }, [isLoading, tarefas]);
 
   const handleAddClick = async (data: { tarefa_nome: string }) => {
     const newTodo = { tarefa_id: nextId, tarefa_nome: data.tarefa_nome };
@@ -33,13 +37,13 @@ const Todos = (): JSX.Element => {
         refetch();
       }
     });
-    setTodos(tarefas);
-    setNextId((prevId) => prevId + 1);
+    setTodos(prevTodos => [...prevTodos, newTodo]);
+    setNextId(prevId => prevId + 1);
     resetField("tarefa_nome");
   };
 
   const handleDeleteClick = async (tarefa_id: number) => {
-    setTodos((prev) => prev.filter((todo) => todo.tarefa_id !== tarefa_id));
+    setTodos(prevTodos => prevTodos.filter(todo => todo.tarefa_id !== tarefa_id));
     await deletarTarefa(tarefa_id, {
       onSuccess: () => {
         refetch();
@@ -68,8 +72,20 @@ const Todos = (): JSX.Element => {
     });
   };
 
+  useEffect(() => {
+    const filteredTodos = todos.filter(todo =>
+      todo.tarefa_nome.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  
+    setFilteredTodos(filteredTodos);
+  }, [searchTerm, todos]);
+
   return (
     <div className="w-screen h-screen bg-gray-950 flex items-center justify-center flex-col">
+      <div className="absolute top-20 flex gap-10 w-full justify-center items-center">
+        <input id="searchbar" type="text" className="w-1/4 h-10 rounded-sm px-3 shadow" placeholder="Pesquise sua tarefa" onChange={e => setSearchTerm(e.target.value)} />
+      </div>
+
       <h1 className="text-4xl text-gray-200 mb-16">Minhas tarefas</h1>
 
       <div className="w-72 flex justify-center items-center flex-col">
@@ -95,8 +111,24 @@ const Todos = (): JSX.Element => {
               </p>
             </div>
 
+          ) : filteredTodos ? (
+            filteredTodos.map((todo) => (
+              <div key={todo.tarefa_id} className="flex items-center gap-4 w-full justify-between rounded-md px-5 py-2 bg-gray-800 mt-2">
+                <button aria-label={`Editar tarefa: ${todo.tarefa_nome}`} onClick={() => handleEditClick(todo.tarefa_id, todo.tarefa_nome)}>
+                  <FaEdit size={26} className="text-blue-600" />
+                </button>
+            
+                <p className="text-gray-200 w-full h-8 flex justify-center items-center">
+                  {todo.tarefa_nome}
+                </p>
+            
+                <button aria-label={`Deletar tarefa: ${todo.tarefa_nome}`} onClick={() => handleDeleteClick(todo.tarefa_id)}>
+                  <FaDeleteLeft size={26} className="text-red-500" />
+                </button>
+              </div>
+            ))
           ) : (
-
+            
             todos.map((todo) => (
               <div key={todo.tarefa_id} className="flex items-center gap-4 w-full justify-between rounded-md px-5 py-2 bg-gray-800 mt-2">
 
@@ -125,7 +157,7 @@ const Todos = (): JSX.Element => {
         <div className="flex flex-col items-center justify-center my-auto gap-16">
           <h2 className="text-3xl text-gray-800 font-semibold">Edite sua tarefa:</h2>
 
-          <input type="text" className="w-1/2 h-10 shadow rounded px-3" placeholder="Edite sua tarefa" onChange={e => setNomeEditado(e.target.value)} />
+          <input type="text" className="w-1/2 h-10 shadow rounded px-3" placeholder="Edite sua tarefa" value={nomeEditado} onChange={e => setNomeEditado(e.target.value)} />
 
           <button aria-label="Editar tarefa" className="bg-green-700 w-28 h-10 rounded-md text-gray-100 shadow-lg" onClick={handleConfirmEditClick}>Editar</button>
         </div>

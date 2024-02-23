@@ -6,17 +6,16 @@ import { QueryClientProvider } from 'react-query';
 
 describe('Todos', () => {
     it('should show my tasks message', () => {
-
         act(() => {
             render(
                 <QueryClientProvider client={queryClient}>
                     <Todos />
                 </QueryClientProvider>
             );
-        })
-
+        });
+        
         expect(screen.getByText('Minhas tarefas')).toBeInTheDocument();
-    })
+    });
 
     it('should show task input', () => {
         act(() => {
@@ -25,12 +24,9 @@ describe('Todos', () => {
                     <Todos />
                 </QueryClientProvider>
             );
-        })
+        });
 
-        const input = screen.getByPlaceholderText('Digite o nome da tarefa');
-
-        expect(input).toBeInTheDocument();
-        // expect(input).toHaveStyle({ padding: "1px" });
+        expect(screen.getByPlaceholderText('Digite o nome da tarefa')).toBeInTheDocument();
     });
 
     it('should show add button', () => {
@@ -40,7 +36,7 @@ describe('Todos', () => {
                     <Todos />
                 </QueryClientProvider>
             );
-        })
+        });
 
         expect(screen.getByLabelText('Adicionar tarefa')).toBeInTheDocument();
     });
@@ -52,7 +48,7 @@ describe('Todos', () => {
                     <Todos />
                 </QueryClientProvider>
             );
-        })
+        });
 
         const input = screen.getByPlaceholderText('Digite o nome da tarefa');
 
@@ -76,9 +72,8 @@ describe('Todos', () => {
                     <Todos />
                 </QueryClientProvider>
             );
-        })
+        });
 
-        // Adicionar tarefa:
         const input = screen.getByPlaceholderText('Digite o nome da tarefa');
 
         const addBtn = screen.getByLabelText('Adicionar tarefa');
@@ -91,8 +86,8 @@ describe('Todos', () => {
 
         await userEvent.click(addBtn);
 
-        // Deletar tarefa:
         const deleteBtns = screen.getAllByLabelText(`Deletar tarefa: ${taskTtile}`);
+
         const deleteTasks = screen.queryAllByText(taskTtile);
 
         await act(async () => {
@@ -106,7 +101,7 @@ describe('Todos', () => {
                 expect(deleteTask).not.toBeInTheDocument();
             });
         });
-    })
+    });
 
     it('should open edit', async () => {
         act(() => {
@@ -115,22 +110,20 @@ describe('Todos', () => {
                     <Todos />
                 </QueryClientProvider>
             );
-        })
+        });
 
-        // Adicionar tarefa:
         const input = screen.getByPlaceholderText('Digite o nome da tarefa');
 
         const addBtn = screen.getByLabelText('Adicionar tarefa');
 
         const taskTitle = 'Nova tarefa';
-        
+
         await userEvent.type(input, taskTitle);
 
         screen.getByDisplayValue(taskTitle);
 
         await userEvent.click(addBtn);
 
-        // Edit:
         const editBtns = screen.getAllByLabelText(`Editar tarefa: ${taskTitle}`);
 
         await act(async () => {
@@ -147,9 +140,8 @@ describe('Todos', () => {
                     <Todos />
                 </QueryClientProvider>
             );
-        })
+        });
 
-        // Adicionar tarefa:
         const input = screen.getByPlaceholderText('Digite o nome da tarefa');
 
         const addBtn = screen.getByLabelText('Adicionar tarefa');
@@ -162,23 +154,52 @@ describe('Todos', () => {
 
         await userEvent.click(addBtn);
 
-        // Edit:
         const editBtns = screen.getAllByLabelText(`Editar tarefa: ${taskTitle}`);
 
-        editBtns.forEach(async (editBtn) => {
-            await userEvent.click(editBtn);
+        await act(async () => {
+            editBtns.forEach(async (editBtn) => {
+                await userEvent.click(editBtn);
+            });
         });
 
-        // Editing Task:
         const editInput = screen.getByPlaceholderText('Edite sua tarefa');
 
-        const taskTitle2 = 'Novissima Tarefa'
+        const taskTitle2 = 'Novissima Tarefa';
 
         await userEvent.type(editInput, taskTitle2);
 
         const editBtnFinal = screen.getByLabelText('Editar tarefa');
 
         await userEvent.click(editBtnFinal);
-        
     });
+
+    it('should search taskTitle', async () => {
+        act(() => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <Todos />
+                </QueryClientProvider>
+            );
+        });
+
+        const input = screen.getByPlaceholderText('Digite o nome da tarefa');
+
+        const addBtn = screen.getByLabelText('Adicionar tarefa');
+    
+        const taskTitle = 'Nova tarefa';
+    
+        await userEvent.type(input, taskTitle);
+    
+        screen.getByDisplayValue(taskTitle);
+    
+        await userEvent.click(addBtn);
+    
+        const search = screen.getByPlaceholderText('Pesquise sua tarefa');
+    
+        await userEvent.type(search, taskTitle);
+    
+        const tasks = screen.getAllByText(taskTitle);
+
+        expect(tasks.length).toBeGreaterThanOrEqual(1);
+    })
 });
